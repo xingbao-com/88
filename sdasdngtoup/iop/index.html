@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全球搜索引擎导航</title>
+    <style>
+        :root {
+            /* 浅色主题 */
+            --bg-color: #ffffff;
+            --text-color: #2d3436;
+            --card-bg: #f8f9fa;
+            --primary: #0984e3;
+            --border: #dfe6e9;
+
+            /* 深色主题 */
+            --bg-dark: #2d3436;
+            --text-dark: #ffffff;
+            --card-dark: #3c4245;
+            --primary-dark: #74b9ff;
+            --border-dark: #636e72;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        body {
+            background: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Segoe UI', system-ui;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        /* 控制栏 */
+        .control-bar {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .theme-btn, .lang-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            border: 2px solid var(--primary);
+            background: transparent;
+            color: var(--primary);
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        /* 搜索区域 */
+        .search-area {
+            max-width: 800px;
+            margin: 2rem auto;
+            position: relative;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        #search-input {
+            flex: 1;
+            padding: 1rem;
+            border: 2px solid var(--primary);
+            border-radius: 30px;
+            font-size: 1.1rem;
+            background: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        #engine-select {
+            width: 200px;
+            padding: 0 1rem;
+            border: 2px solid var(--primary);
+            border-radius: 30px;
+            background: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        .search-btn {
+            padding: 1rem 2rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* 引擎展示区 */
+        .engine-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 3rem;
+        }
+
+        .engine-card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 15px;
+            border: 1px solid var(--border);
+            cursor: pointer;
+        }
+
+        .engine-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        /* 深色模式 */
+        [data-theme="dark"] body {
+            --bg-color: var(--bg-dark);
+            --text-color: var(--text-dark);
+            --card-bg: var(--card-dark);
+            --primary: var(--primary-dark);
+            --border: var(--border-dark);
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="control-bar">
+        <button class="theme-btn" data-i18n="theme">🌓 深色模式</button>
+        <button class="lang-btn" data-i18n="lang">中/EN</button>
+    </div>
+
+    <div class="search-area">
+        <div class="search-box">
+            <select id="engine-select"></select>
+            <input type="text" id="search-input" placeholder data-i18n="placeholder">
+            <button class="search-btn" data-i18n="search">🔍 搜索</button>
+        </div>
+
+        <div class="engine-grid"></div>
+    </div>
+</div>
+
+<script>
+    // 配置数据
+    const CONFIG = {
+        engines: [
+            {
+                name: { en: 'Google', zh: '谷歌' },
+                url: 'https://www.google.com/search?q=',
+                icon: 'https://www.google.com/favicon.ico'
+            },
+            {
+                name: { en: 'Bing', zh: '必应' },
+                url: 'https://www.bing.com/search?q=',
+                icon: 'https://www.bing.com/favicon.ico'
+            },
+            {
+                name: { en: 'DuckDuckGo', zh: '鸭鸭走' },
+                url: 'https://duckduckgo.com/?q=',
+                icon: 'https://duckduckgo.com/favicon.ico'
+            },
+            {
+                name: { en: 'Ecosia', zh: '环保搜索' },
+                url: 'https://www.ecosia.org/search?q=',
+                icon: 'https://www.ecosia.org/favicon.ico'
+            },
+            {
+                name: { en: 'Startpage', zh: '星页' },
+                url: 'https://www.startpage.com/search?q=',
+                icon: 'https://www.startpage.com/favicon.ico'
+            }
+        ],
+        i18n: {
+            en: {
+                placeholder: "Search the web...",
+                search: "Search",
+                theme: "🌓 Dark Mode",
+                lang: "EN/中文"
+            },
+            zh: {
+                placeholder: "请输入搜索内容...",
+                search: "立即搜索",
+                theme: "🌓 深色模式",
+                lang: "中/EN"
+            }
+        }
+    };
+
+    // 状态管理
+    let currentLang = localStorage.getItem('lang') || 'zh';
+    let darkMode = localStorage.getItem('theme') === 'dark';
+
+    // 初始化
+    function init() {
+        // 主题初始化
+        document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : '');
+
+        // 语言初始化
+        updateTranslations();
+
+        // 初始化搜索引擎
+        initEngines();
+
+        // 事件监听
+        document.querySelector('.theme-btn').addEventListener('click', toggleTheme);
+        document.querySelector('.lang-btn').addEventListener('click', toggleLanguage);
+        document.querySelector('.search-btn').addEventListener('click', performSearch);
+        document.getElementById('search-input').addEventListener('keypress', e => {
+            if (e.key === 'Enter') performSearch();
+        });
+    }
+
+    // 初始化搜索引擎
+    function initEngines() {
+        const select = document.getElementById('engine-select');
+        const grid = document.querySelector('.engine-grid');
+
+        CONFIG.engines.forEach(engine => {
+            // 创建选项
+            const option = document.createElement('option');
+            option.value = engine.url;
+            option.textContent = engine.name[currentLang];
+            select.appendChild(option);
+
+            // 创建卡片
+            const card = document.createElement('div');
+            card.className = 'engine-card';
+            card.innerHTML = `
+            <img src="${engine.icon}" alt="${engine.name.en}" width="32" style="margin-bottom:1rem">
+            <h3>${engine.name[currentLang]}</h3>
+            <p>${currentLang === 'zh' ? '点击直接搜索' : 'Click to search'}</p>
+        `;
+            card.addEventListener('click', () => {
+                const query = document.getElementById('search-input').value;
+                if (query) window.open(`${engine.url}${encodeURIComponent(query)}`, '_blank');
+            });
+            grid.appendChild(card);
+        });
+    }
+
+    // 语言切换
+    function toggleLanguage() {
+        currentLang = currentLang === 'zh' ? 'en' : 'zh';
+        localStorage.setItem('lang', currentLang);
+        updateTranslations();
+        refreshEngineNames();
+    }
+
+    // 更新翻译
+    function updateTranslations() {
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            el.textContent = CONFIG.i18n[currentLang][key];
+        });
+    }
+
+    // 刷新引擎名称
+    function refreshEngineNames() {
+        const select = document.getElementById('engine-select');
+        const cards = document.querySelectorAll('.engine-card h3');
+
+        CONFIG.engines.forEach((engine, index) => {
+            select.options[index].text = engine.name[currentLang];
+            cards[index].textContent = engine.name[currentLang];
+        });
+    }
+
+    // 主题切换
+    function toggleTheme() {
+        darkMode = !darkMode;
+        document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : '');
+        localStorage.setItem('theme', darkMode ? 'dark' : 'light');
+    }
+
+    // 执行搜索
+    function performSearch() {
+        const engine = document.getElementById('engine-select').value;
+        const query = document.getElementById('search-input').value;
+        if (query) {
+            window.open(`${engine}${encodeURIComponent(query)}`, '_blank');
+        }
+    }
+
+    // 启动应用
+    init();
+</script>
+</body>
+</html>
+</body>
+</html>
